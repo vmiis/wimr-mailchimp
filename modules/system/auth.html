@@ -4,6 +4,7 @@
             //--------------------------------------------------------
             var u=window.location.origin;
             if(u=="http://127.0.0.1:8000") u=u+"/vmiis/wimr-mailchimp/auth.html";
+            else u=u+"/wimr-mailchimp/auth.html";
             $vm.auth_signin=function(){
                 url='https://login.mailchimp.com/oauth2/authorize';
                 url+='?response_type=code';
