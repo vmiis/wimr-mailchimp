@@ -1,0 +1,125 @@
+<div id=D__ID>
+	<div id=toolbar__ID class="navbar navbar-default">
+        <div>
+            <button id=export__ID type=button class="btn btn-secondary" title='Export' style='margin-right:30px'>Export</button>
+            <span id=name__ID style='margin-left:50px; margin-right:50px;font-weight:bold;'></span> Total Number of records: <span id=total__ID></span>
+        </div>
+    </div>
+    <div>
+        <table id="grid__ID"></table>
+    </div>
+    <script>
+        function F__ID(){
+            //-------------------------------------------------
+            var m=$vm.module_list['__MODULE__'];
+            //-------------------------------------------------
+            var name="Woolcock Campaign List";
+            $('#name__ID').text(name);
+            var columns=`
+                Name|name
+                Total subscrib count|stats.member_count
+                Unsubscribe count|stats.unsubscribe_count
+                Campaign count|stats.campaign_count
+                Last campaign|stats.campaign_last_sent
+                Subscribe count since last campaign|stats.member_count_since_send
+                Unsubscribe count since last campaign|stats.unsubscribe_count_since_send        
+            `
+            //-------------------------------------------------
+            var cell_render=function(i,hd,td){
+                switch(hd){
+                    case "Last campaign":
+                        td=td.substr(0,10); 
+                        break;
+                }
+                return td;
+            }
+            //-------------------------------------------------
+            /*
+            var on_u_click=function(e,u){
+                e.preventDefault();
+                e.stopPropagation();
+                var m_id=u.attr('m_id');
+                $vm.show_module("item-list",{m_id:m_id});
+            }
+            */
+            //-------------------------------------------------
+            var records=[];
+            //-------------------------------------------------
+            var query_data=function(s){
+                var path="/lists";
+                $vm.get_mailchimp_data(path,function(res){
+                        var jD=JSON.parse(res.result);
+                        console.log(jD);
+                        records=$vm.grid_render_jd("__ID",{columns:columns,rows:jD.lists,cell:cell_render});
+                        $('#total__ID').text(records.length);
+                        
+                        //$('#grid__ID td').find('u').on('click',function(e){
+                        //    on_u_click(e,$(this))
+                        //});
+                })
+            }
+            //-------------------------------------------------
+            $('#D__ID').on('load',function(){
+                $('#name__ID').text(name);
+                query_data('');
+            })
+            //-------------------------------------------------
+            $('#query__ID').on('click',function(){
+                query_data($('#keyword__ID').val());
+            })
+            //-------------------------------------------------
+            $('#export__ID').on('click',function(){
+                if(records!=[]) $vm.download_csv(name+".csv",records);
+            })
+            //-------------------------------------------------
+        }
+    </script>
+    <style>
+        #D__ID{
+            height:100%;
+            background-color:#fff;
+        }
+
+        #toolbar__ID{
+            background-color:#ccc;
+            padding:5px 10px;
+            margin-bottom:0px;
+            overflow:hidden
+        }
+        #D__ID table{
+            font-size:13px;
+            font-family: Helvetica, Arial, sans-serif;
+        }
+        #grid__ID{
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin: 0;
+            border-width: 0;
+        }
+        #grid__ID th{
+            font-weight: bold;
+            background-color:#EEE;
+            padding:5px;
+            border: 1px solid #CCC;
+        }
+        #grid__ID td{
+            font-weight: 300;
+            /*background-color:#FFF;*/
+            padding:3px;
+            border: 1px solid #CCC;
+            vertical-align: top;
+            white-space: pre;
+            background-color: white;
+        }
+
+        #grid__ID tr:hover { 
+            background-color:#EEE; 
+        }        
+        
+        #grid__ID tr td:first-child{
+            padding-left:10px;
+            padding-right:10px;
+            background-color:#EEE;
+        }
+    </style>
+</div>

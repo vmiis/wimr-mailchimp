@@ -1,0 +1,74 @@
+<div id=D__ID>
+    <script>
+        function F__ID(){
+            //--------------------------------------------------------
+            var u=window.location.origin;
+            if(u=="http://127.0.0.1:8000") u=u+"/vmiis/wimr-mailchimp/auth.html";
+            $vm.auth_signin=function(){
+                url='https://login.mailchimp.com/oauth2/authorize';
+                url+='?response_type=code';
+                if(u.indexOf("http://127.0.0.1:8000")!=-1) url+='&client_id=333393775932';  //woolcock 127
+                else url+='&client_id=880438068814';  //woolcock web
+                url+='&redirect_uri='+u;
+                url+='&state=exchange-mailchimp-token.wimr-mailchimp';
+                window.open(url);
+            }
+            //--------------------------------------------------------
+            $vm.auth_signout=function(){
+                sessionStorage.clear();
+                window.location.href=$vm.hosting_path+"/";
+            }
+            //------------------------------------
+            window.onmessage=function(e){
+                if (e.origin == window.location.origin){
+                    var href=e.data.href;
+                    if(href==undefined) return;
+                    var code=href.split('code=').pop();
+                    code=code.split('&')[0];
+	                var state=href.split('state=exchange').pop();
+	                state="exchange"+state.split('&')[0];
+	                state=state.split('#')[0];
+                    if(code!=undefined && state!=undefined){
+                        var cmd=state.split('.')[0];
+                        var id=state.split('.').pop();
+                        $vm.request_token(id,cmd,code,u,href,function(id,res){
+                            $vm.show_user();
+                        });
+                    }
+                }
+            }
+            //------------------------------------
+            $vm.init(function(){
+                $vm.init_status=1;
+                var id="wimr-mailchimp";
+                if(sessionStorage.getItem(id+" username")!=null)     $vm.user_name=sessionStorage.getItem(id+" username");
+                if(sessionStorage.getItem(id+" displayname")!=null)  $vm.displayname=sessionStorage.getItem(id+" displayname");
+                $vm.show_user();
+            })
+            //------------------------------------
+            $vm.request_token=function(id,cmd,code,redirect_uri,href,callback){
+                var api_name=id.split('_')[0];  //where to request
+                $vm.request({api:api_name,cmd:cmd,token:code,redirect_uri:redirect_uri},function(res){
+                    if(res.status=='ok'){
+                        switch(cmd){
+                            case "exchange-mailchimp-token":
+                                sessionStorage.setItem(api_name+" oauth",JSON.stringify(res.result));
+                                var host='us3.api.mailchimp.com';
+                                $vm.request({api:api_name,cmd:'mailchimp-api',access_token:res.result.access_token,host:host,path:"/3.0/"},function(res){
+                                    sessionStorage.setItem(api_name+" oauth profile",res.result);
+                                    var r=JSON.parse(sessionStorage.getItem(api_name+" oauth profile"));
+                                    sessionStorage.setItem(api_name+" username",r.username);
+                                    sessionStorage.setItem(api_name+" displayname",r.first_name+" "+r.last_name);
+                                    $vm.user_name=sessionStorage.getItem(api_name+" username");
+                                    $vm.displayname=sessionStorage.getItem(api_name+" displayname");
+                                    callback();
+                                })
+                                break;
+                        }
+                    }
+                })
+            }
+            //------------------------------------
+        }
+    </script>
+</div>

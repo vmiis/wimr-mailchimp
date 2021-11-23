@@ -1,0 +1,92 @@
+<div id=D__ID>
+    <script>
+        function F__ID(){
+            //--------------------------------------------------------
+            $vm.grid_render_jd=function(domid,input){
+                var rows=input.rows;
+                var cell=input.cell;
+                var columns=input.columns;
+                
+                var headers=[];
+                var ps=[];
+                var records=[];                
+                try{
+                    var cols=columns.split('\n');
+                    for(var i=0; i<cols.length;i++){
+                        cols[i]=cols[i].trim();
+                        if(cols[i]!=""){
+                            var cc=cols[i].split('|');
+                            headers.push(cc[0]);
+                            ps.push(cc[1].replace('\r',''));
+                        }
+                    }
+                    for(var i=0;i<rows.length;i++){
+                        var record={};
+                        for(var j=0;j<headers.length;j++){ //get each col
+                            var bb=ps[j].split('.');
+                            if(ps[j].indexOf('@')!=-1) bb=[ps[j]];  //ignore '.', bb contains only one element
+                            var cv=rows[i];
+                            for(var k=0;k<bb.length;k++){
+                                if(cv==undefined || cv==null) break;
+                                if(bb[k]=='[0]') cv=cv[0];
+                                else cv=cv[bb[k]];
+                            }
+                            if(cv==null) cv="";
+                            record[headers[j]]=cv;
+                        }
+                        records.push(record);
+                    }
+                }
+                catch(e){
+                    alert(e);
+                    return;
+                }
+                //now we have headers and records
+                var txt="<tr><th></th><th></th>";
+                var N=headers.length;
+                for(var i=0;i<N;i++){
+                    txt+="<th>"+headers[i]+"</th>";
+                }
+                txt+="</tr>"
+                for(var i=0;i<records.length;i++){
+                    txt+="<tr><td>"+(i+1)+"</td><td><i style='cursor:pointer' class='fa fa-pencil-square-o' i="+i+"></i></td>"
+                    for(var j=0;j<N;j++){
+                        var ctxt=records[i][headers[j]];
+                        if(cell!=undefined) ctxt=cell(i,headers[j],ctxt);
+                        txt+="<td>"+ctxt+"</td>";
+                    }
+                    txt+="</tr>"
+                }
+                $('#grid'+domid).html(txt);
+                $('#grid'+domid).find('i').on('click',function(){
+                    i=$(this).attr('i');
+                    $vm.show_module('jsonv',{json_data:rows[i]})
+                });
+                //--------------------------------------------------------
+                return records;
+            }
+            //--------------------------------------------------------
+            $vm.get_mailchimp_access_token=function(callback){
+                var t=sessionStorage.getItem("wimr-mailchimp oauth");
+                if(t==null){
+                    alert("You haven't login!");
+                    callback("");
+                    return;
+                }
+                t=JSON.parse(t);
+                var access_token=t.access_token;
+                callback(access_token);
+            }
+            //--------------------------------------------------------
+            $vm.get_mailchimp_data=function(path, callback){
+                $vm.get_mailchimp_access_token(function(access_token){
+                    var host='us3.api.mailchimp.com';
+                    $vm.request({api:'wimr-mailchimp',cmd:'mailchimp-api',access_token:access_token,host:host,path:"/3.0"+path},function(res){
+                        callback(res);
+                    });
+                })
+            }
+            //-------------------------------------------------
+        }
+    </script>   
+</div>

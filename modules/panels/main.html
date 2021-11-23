@@ -1,0 +1,160 @@
+<div id=D__ID>
+    <span id=msg__ID style='margin-left:20px;margin-top:20px'></span>
+    <div id=panel__ID>
+        <div>
+            <!--<b>SharePoint</b>-->
+            <ul>
+                <li><a href="?/campaign-list">Campaign List</a></li>
+                <li><a href="?/search-audience">Search Audience</a></li>
+                
+            </ul>
+        </div>
+    </div>
+    <script>
+        function F__ID(){
+            //--------------------------------------------------------
+            $('#panel__ID').css('min-height',$vm.min_height);
+            //--------------------------------------------------------
+            $('#D__ID a').on('click',function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                var module_name=$(this).attr('href').replace('?\/','');
+                switch(module_name){
+                    case "count-contacts": query_contacts(); break;
+                    case "count-studes": query_studies(); break;
+                    case "count-newsletters": query_newsletters(); break;
+                    case "count-snapforms": query_snapforms(); break;
+                    case "count-snapforms_30d": query_snapforms_30d(); break;
+                    default: if(module_name!="") $vm.show_module(module_name,{}); break;
+                }
+                //if(module_name!="") $vm.show_module(module_name,{})
+            })
+            //---------------------------------------------------------------
+            var query_contacts=function(){
+                var path="/api/data/v9.1/RetrieveTotalRecordCount(EntityNames=['contact'])"
+                $('#msg__ID').text("Please wait...");
+                $vm.get_microsoft_data(path,function(status,data){
+                    $('#msg__ID').text("");
+                    if(status==200){
+                        var jD=JSON.parse(data);
+                        console.log(jD);
+                        var n=jD["EntityRecordCountCollection"]["Values"][0];
+                        $('#count_contacts__ID').text(n);
+                    }
+                    else alert("Error: "+status);
+                })
+            }
+            //---------------------------------------------------------------
+            var query_studies=function(){
+                var path="/api/data/v9.1/RetrieveTotalRecordCount(EntityNames=['woolcock_study'])"
+                $('#msg__ID').text("Please wait...");
+                $vm.get_microsoft_data(path,function(status,data){
+                    $('#msg__ID').text("");
+                    if(status==200){
+                        console.log(jD);
+                        var jD=JSON.parse(data);
+                        var n=jD["EntityRecordCountCollection"]["Values"][0];
+                        $('#count_studies__ID').text(n);
+                    }
+                    else alert("Error: "+status);
+                })
+            }
+            //---------------------------------------------------------------
+            var query_newsletters=function(){
+                var path="/api/data/v9.1/contacts?$count=true&$filter=woolcock_newsletter eq true&$top=1"
+                $('#msg__ID').text("Please wait...");
+                $vm.get_microsoft_data(path,function(status,data){
+                    $('#msg__ID').text("");
+                    if(status==200){
+                        console.log(jD);
+                        var jD=JSON.parse(data);
+                        console.log(jD)
+                        var n=jD["@odata.count"];
+                        $('#count_newsletters__ID').text(n);
+                    }
+                    else alert("Error: "+status);
+                })
+            }
+            //---------------------------------------------------------------
+            var query_snapforms=function(){
+                var path="/api/data/v9.1/contacts?$count=true&$filter=woolcock_contactsource eq 1 and createdby/fullname eq 'Zhiming Administrator' &$top=1"
+                $('#msg__ID').text("Please wait...");
+                $vm.get_microsoft_data(path,function(status,data){
+                    $('#msg__ID').text("");
+                    if(status==200){
+                        console.log(jD);
+                        var jD=JSON.parse(data);
+                        console.log(jD)
+                        var n=jD["@odata.count"];
+                        $('#count_snapforms__ID').text(n);
+                    }
+                    else alert("Error: "+status);
+                })
+            }
+            //---------------------------------------------------------------
+            var query_snapforms_30d=function(){
+                var d=new Date();
+                d.setDate(d.getDate()-30);
+                d=d.toISOString();
+                var path="/api/data/v9.1/contacts?$count=true&$filter=woolcock_contactsource eq 1 and createdon gt '"+d+"' and createdby/fullname eq 'Zhiming Administrator' &$top=1"
+                $('#msg__ID').text("Please wait...");
+                $vm.get_microsoft_data(path,function(status,data){
+                    $('#msg__ID').text("");
+                    if(status==200){
+                        console.log(jD);
+                        var jD=JSON.parse(data);
+                        console.log(jD)
+                        var n=jD["@odata.count"];
+                        $('#count_snapforms_30d__ID').text(n);
+                    }
+                    else alert("Error: "+status);
+                })
+            }
+            //---------------------------------------------------------------
+            //"path":"/api/data/v9.1/contacts?$count=true&$filter=woolcock_newsletter eq true",
+        }
+    </script>
+    <style>
+        #D__ID{
+            height:100%;
+            background-color: #fff;
+        }
+        #panel__ID{
+            padding:50px 100px;
+
+            display: grid;
+            grid-template-columns: auto auto auto auto;
+            grid-gap: 10px;
+
+        }
+
+        #panel__ID li a{
+            color:#555;
+            text-decoration: none;
+            margin-right:20px;
+        }
+        #panel__ID li i{
+            color:#ccc;
+            font-size:80%;
+        }
+        
+        #_panel__ID li a:link{
+            color:#555;
+        }
+        #panel__ID li a:visited{
+            color:#555;
+        }
+        #panel__ID li a:hover{
+            color:red;
+        }
+        #panel__ID li a:hover i{
+            color:red;
+        }
+
+        @media screen and (max-width: 1200px) {
+            #panel__ID{
+                padding:10px 10px;
+            }
+        }
+    </style>
+</div>
